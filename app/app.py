@@ -1,7 +1,7 @@
 import os
 import re
 import requests
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, Blueprint
 from bs4 import BeautifulSoup
 from qbittorrentapi import Client
 from transmission_rpc import Client as transmissionrpc
@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from urllib.parse import urlparse
 
 app = Flask(__name__)
+bp = Blueprint("main", __name__, template_folder="templates", static_folder="static")
 
 # Load environment variables
 load_dotenv()
@@ -44,8 +45,13 @@ SAVE_PATH_BASE = os.getenv("SAVE_PATH_BASE")
 NAV_LINK_NAME = os.getenv("NAV_LINK_NAME")
 NAV_LINK_URL = os.getenv("NAV_LINK_URL")
 
-# Define the port to be used
+# Define the bind address and port for the Flask app
+BIND_ADDRESS = os.getenv("BIND_ADDRESS", "0.0.0.0")
 FLASK_PORT = int(os.getenv("PORT", 5078))
+
+# Define the url prefix for the API endpoints
+URL_PREFIX = os.getenv("URL_PREFIX", "")
+
 
 # Print configuration
 print(f"ABB_HOSTNAME: {ABB_HOSTNAME}")
@@ -59,6 +65,7 @@ print(f"SAVE_PATH_BASE: {SAVE_PATH_BASE}")
 print(f"NAV_LINK_NAME: {NAV_LINK_NAME}")
 print(f"NAV_LINK_URL: {NAV_LINK_URL}")
 print(f"PAGE_LIMIT: {PAGE_LIMIT}")
+print(f"BIND_ADDRESS: {BIND_ADDRESS}")
 print(f"PORT: {FLASK_PORT}")
 
 
@@ -263,7 +270,7 @@ def sanitize_title(title):
 
 
 # Endpoint for search page
-@app.route("/", methods=["GET", "POST"])
+@bp.route("/", methods=["GET", "POST"])
 def search():
     books = []
     query = ""
@@ -281,7 +288,7 @@ def search():
 
 
 # Endpoint to send magnet link to qBittorrent
-@app.route("/send", methods=["POST"])
+@bp.route("/send", methods=["POST"])
 def send():
     data = request.json
     details_url = data.get("link")
@@ -330,7 +337,7 @@ def send():
         return jsonify({"message": str(e)}), 500
 
 
-@app.route("/status")
+@bp.route("/status")
 def status():
     try:
         if DOWNLOAD_CLIENT == "transmission":
@@ -385,6 +392,7 @@ def status():
     except Exception as e:
         return jsonify({"message": f"Failed to fetch torrent status: {e}"}), 500
 
+app.register_blueprint(bp, url_prefix=URL_PREFIX)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=FLASK_PORT)
+    app.run(host=BIND_ADDRESS, port=FLASK_PORT)
