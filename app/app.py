@@ -10,11 +10,13 @@ from deluge_web_client import TorrentOptions as delugetorrentoptions
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 
-app = Flask(__name__)
-bp = Blueprint("main", __name__, template_folder="templates", static_folder="static")
-
-# Load environment variables
+# Load environment variables before creating the app so URL_PREFIX is available
 load_dotenv()
+
+URL_PREFIX = os.getenv("URL_PREFIX", "")
+
+app = Flask(__name__, static_url_path=f"{URL_PREFIX}/static")
+bp = Blueprint("main", __name__, template_folder="templates")
 
 ABB_HOSTNAME = os.getenv("ABB_HOSTNAME", "audiobookbay.lu")
 
@@ -48,9 +50,6 @@ NAV_LINK_URL = os.getenv("NAV_LINK_URL")
 # Define the bind address and port for the Flask app
 BIND_ADDRESS = os.getenv("BIND_ADDRESS", "0.0.0.0")
 FLASK_PORT = int(os.getenv("PORT", 5078))
-
-# Define the url prefix for the API endpoints
-URL_PREFIX = os.getenv("URL_PREFIX", "")
 
 
 # Print configuration
