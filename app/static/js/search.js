@@ -168,7 +168,7 @@ function applyFilters() {
     if (language && row.dataset.language !== language) visible = false;
     if (bitrate && row.dataset.bitrate !== bitrate) visible = false;
     if (format && row.dataset.format !== format) visible = false;
-    
+
     // File size range filtering
     if (sizeRange) {
         const rowSizeMB = parseFileSizeToMB(row.dataset.fileSize);
@@ -215,7 +215,7 @@ function clearFilters() {
   document.getElementById("format-filter").value = "";
   if (datePicker) datePicker.clear();
   if (fileSizeSlider) fileSizeSlider.reset();
-  
+
   document.querySelectorAll(".result-row").forEach((row) => {
     row.style.display = "";
   });
@@ -292,7 +292,7 @@ function hideScrollingMessages() {
 }
 
 function sendToQB(link, title) {
-  fetch("/send", {
+  fetch("send", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ link: link, title: title }),
